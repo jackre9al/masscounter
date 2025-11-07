@@ -1,5 +1,5 @@
-// Logger with delete (hover trash on desktop, tap sheet on mobile), simple edit, and 'Auto time' label.
-const STORAGE_KEY = 'milkLoggerEntries_v4';
+// Fixed: action sheet stays hidden until a row is tapped; robust [hidden] handling.
+const STORAGE_KEY = 'milkLoggerEntries_v5';
 const MAX_ENTRIES = 10;
 
 const gramsInput = document.getElementById('grams');
@@ -32,8 +32,7 @@ const sheetDelete = document.getElementById('sheetDelete');
 const sheetCancel = document.getElementById('sheetCancel');
 let sheetTargetId = null;
 
-// Track edit mode
-let editingId = null; // if set, Add becomes Save
+let editingId = null;
 
 function supportsHover(){
   return window.matchMedia && window.matchMedia('(hover: hover)').matches;
@@ -75,8 +74,6 @@ function applyScrollLock(length){
   if (length < MAX_ENTRIES){ root.classList.add('no-scroll'); body.classList.add('no-scroll'); }
   else { root.classList.remove('no-scroll'); body.classList.remove('no-scroll'); }
 }
-
-// Ensure each entry has a unique id
 function ensureIds(arr){
   let changed = false;
   arr.forEach(e=>{
@@ -106,6 +103,9 @@ function buildCustomDateOrNull(){
 }
 
 function render(){
+  // Always make sure sheet is closed when re-rendering
+  closeSheet(true);
+
   const entriesRaw = ensureIds(loadEntries());
   applyScrollLock(entriesRaw.length);
 
@@ -192,7 +192,7 @@ function render(){
   });
   last7Days.hidden = !anyDayShown;
 
-  // Wire up desktop hover action buttons
+  // Wire up actions
   if (supportsHover()){
     daysContainer.querySelectorAll('.icon-btn').forEach(btn=>{
       const id = btn.getAttribute('data-id');
@@ -204,7 +204,6 @@ function render(){
       });
     });
   } else {
-    // Mobile: tapping a row opens action sheet
     daysContainer.querySelectorAll('.row').forEach(row=>{
       row.addEventListener('click', ()=>{
         sheetTargetId = row.getAttribute('data-id');
@@ -223,9 +222,18 @@ function render(){
   grandTotalBlock.hidden = false;
 }
 
-function openSheet(){ sheet.hidden = false; document.body.classList.add('no-scroll'); }
-function closeSheet(){ sheet.hidden = true; document.body.classList.remove('no-scroll'); }
-sheetCancel.addEventListener('click', closeSheet);
+function openSheet(){
+  if (!sheetTargetId) return; // do not open if no target
+  sheet.hidden = false;
+  document.body.classList.add('no-scroll');
+}
+function closeSheet(silent=false){
+  if (sheet.hidden && silent) return;
+  sheet.hidden = true;
+  document.body.classList.remove('no-scroll');
+  sheetTargetId = null;
+}
+sheetCancel.addEventListener('click', ()=>closeSheet());
 sheet.addEventListener('click', (e)=>{ if(e.target===sheet) closeSheet(); });
 sheetDelete.addEventListener('click', ()=>{ if(sheetTargetId){ onDelete(sheetTargetId); } closeSheet(); });
 sheetEdit.addEventListener('click', ()=>{ if(sheetTargetId){ onStartEdit(sheetTargetId); } closeSheet(); });
@@ -257,7 +265,6 @@ function onStartEdit(id){
   const mi = String(d.getMinutes()).padStart(2,'0');
   const s = String(d.getSeconds()).padStart(2,'0');
 
-  // Open custom panel and prefill
   customPanel.hidden = false;
   toggleCustom.textContent = 'Auto time';
   dateInput.value = `${y}-${m}-${day}`;
@@ -300,7 +307,6 @@ function addEntry(newGrams){
 toggleCustom.addEventListener('click', ()=>{
   const open = customPanel.hidden === false;
   if (open){
-    // Go to Auto time: hide and clear inputs
     customPanel.hidden = true;
     toggleCustom.textContent = 'Custom time';
     dateInput.value = '';
@@ -310,9 +316,7 @@ toggleCustom.addEventListener('click', ()=>{
     toggleCustom.textContent = 'Auto time';
   }
 });
-resetNow.addEventListener('click', ()=>{
-  dateInput.value = ''; timeInput.value = '';
-});
+resetNow.addEventListener('click', ()=>{ dateInput.value=''; timeInput.value=''; });
 
 addBtn.addEventListener('click', ()=>{
   const val = gramsInput.value.trim();
@@ -358,5 +362,7 @@ clearBtn.addEventListener('click', ()=>{
 document.addEventListener('DOMContentLoaded', ()=>{
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'local time';
   tzInfo.textContent = `Time zone: ${tz}`;
+  // Force-close sheet on startup for safety
+  closeSheet(true);
   render();
 });

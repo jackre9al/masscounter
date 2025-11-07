@@ -1,26 +1,13 @@
-# Mass Gainer Logger — Actions + Edit/Delete
+# Mass Gainer Logger — Actions (Fixed)
 
-What’s new
-- **Delete**: 
-  - Desktop → hover a row to reveal a trash icon.
-  - Mobile → tap a row to open an action sheet with Delete.
-- **Edit**:
-  - Desktop hover menu also includes Edit.
-  - Mobile action sheet has Edit.
-  - Editing pre-fills grams and opens Custom time; Save updates the entry.
-- **'Auto time'**:
-  - The toggle now reads **Custom time** ↔ **Auto time**.
-  - Auto time hides the custom panel and clears date/time fields.
+Fix for the action sheet showing on page load:
+- CSS now forces `[hidden]{display:none !important}` so the sheet stays hidden across browsers.
+- JS closes the sheet on render and on page load, and only opens it if a row was tapped.
+- Guarded `openSheet()` so it never opens without a valid target id.
 
-Existing features
-- Minimalist design.
-- Last 7 days (detailed), Last Week (total with range), Grand Total.
-- Scroll unlocks once entries reach `MAX_ENTRIES`.
+Everything else remains:
+- Minimalist UI, edit/delete, 'Custom time' ↔ 'Auto time'
+- Last 7 days (detailed), Last Week total (with range), Grand Total
+- Scroll lock threshold via `MAX_ENTRIES`
 
-Deploy
-- Drag all files into a GitHub repo and enable GitHub Pages (Settings → Pages → Branch: `main`, folder: `/ (root)`).
-
-Tweak
-```js
-const MAX_ENTRIES = 10; // in script.js
-```
+Deploy: replace your repo files with these and refresh.
