@@ -1,0 +1,20 @@
+/* Basic modern styling */
+:root{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;line-height:1.35}
+body{margin:0;padding:18px;background:#f7f8fb;color:#111}
+header{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:14px}
+h1{font-size:18px;margin:0}
+.card{background:#fff;border-radius:10px;padding:14px;box-shadow:0 6px 18px rgba(11,20,40,0.06)}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+input[type="number"]{width:120px;padding:10px;border-radius:8px;border:1px solid #ddd;font-size:15px}
+button{padding:10px 12px;border-radius:8px;border:0;background:#0b5cff;color:#fff;font-weight:600;cursor:pointer}
+button.ghost{background:transparent;color:#0b5cff;border:1px solid #0b5cff}
+.small{font-size:13px;color:#666}
+table{width:100%;border-collapse:collapse;margin-top:12px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid #f0f0f3;font-size:14px}
+th{font-weight:700;color:#333}
+.muted{color:#666;font-size:13px}
+.center{display:flex;gap:8px;align-items:center}
+.empty{padding:28px;text-align:center;color:#667; font-size:15px}
+.no-scroll{height:100vh;overflow:hidden}
+.spacer{flex:1}
+@media (max-width:600px){input[type="number"]{width:100%}; .controls{flex-direction:column;align-items:stretch}}

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Milk / Mass Gainer Logger</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<header>
+  <h1>Milk / Mass Gainer Logger</h1>
+  <div class="small muted" id="tzInfo"></div>
+</header>
+
+<div class="card" id="app">
+  <div class="controls">
+    <label class="small muted" for="grams">Grams</label>
+    <input type="number" id="grams" placeholder="e.g. 50" min="0" step="1" />
+    <div class="spacer"></div>
+    <div class="center">
+      <button id="addBtn">Add</button>
+      <button class="ghost" id="exportBtn">Export CSV</button>
+      <button class="ghost" id="clearBtn">Clear</button>
+    </div>
+  </div>
+
+  <div id="listArea">
+    <div id="emptyState" class="empty">No entries yet. Add a grams value and press Enter or Add.</div>
+    <table id="logTable" style="display:none">
+      <thead>
+        <tr>
+          <th>Date &amp; time</th>
+          <th>Dose #</th>
+          <th>Grams</th>
+          <th id="howMuchCol">Cumulative (g)</th>
+        </tr>
+      </thead>
+      <tbody id="logBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
