@@ -21,11 +21,35 @@
         <label for="grams">Grams</label>
         <input type="number" id="grams" placeholder="50" inputmode="numeric" min="0" step="1" />
       </div>
+
+      <div class="field small-field">
+        <label class="vis-label">Time</label>
+        <button id="toggleCustom" class="btn subtle">Custom time</button>
+      </div>
+
       <div class="actions">
         <button id="addBtn" class="btn primary">Add</button>
         <button id="exportBtn" class="btn">Export CSV</button>
         <button id="clearBtn" class="btn danger">Clear</button>
       </div>
+    </section>
+
+    <section id="customPanel" class="panel custom-panel" hidden>
+      <div class="custom-row">
+        <div class="field">
+          <label for="dateInput">Date</label>
+          <input type="date" id="dateInput" />
+        </div>
+        <div class="field">
+          <label for="timeInput">Time</label>
+          <input type="time" id="timeInput" step="1" />
+        </div>
+        <div class="field small-field">
+          <label class="vis-label">Reset</label>
+          <button id="resetNow" class="btn">Now</button>
+        </div>
+      </div>
+      <div class="hint">Leave blank to use your device’s current date & time.</div>
     </section>
 
     <section id="contentArea" class="panel">

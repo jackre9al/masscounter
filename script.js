@@ -1,6 +1,6 @@
-// Minimalist Mass Gainer Logger with grouping: Last 7 days (detailed), Last Week (total only), Grand Total.
-// Scroll lock stays active only while entries < MAX_ENTRIES.
-const STORAGE_KEY = 'milkLoggerEntries_v2';
+// Mass Gainer Logger with optional custom date/time, minimalist UI, and grouping.
+// Scroll is locked while entries < MAX_ENTRIES; blank custom fields default to now.
+const STORAGE_KEY = 'milkLoggerEntries_v3';
 const MAX_ENTRIES = 10;
 
 const gramsInput = document.getElementById('grams');
@@ -8,6 +8,12 @@ const addBtn = document.getElementById('addBtn');
 const exportBtn = document.getElementById('exportBtn');
 const clearBtn = document.getElementById('clearBtn');
 const tzInfo = document.getElementById('tzInfo');
+
+const toggleCustom = document.getElementById('toggleCustom');
+const customPanel = document.getElementById('customPanel');
+const dateInput = document.getElementById('dateInput');
+const timeInput = document.getElementById('timeInput');
+const resetNow = document.getElementById('resetNow');
 
 const emptyState = document.getElementById('emptyState');
 const last7Days = document.getElementById('last7Days');
@@ -20,57 +26,59 @@ const lastWeekTotal = document.getElementById('lastWeekTotal');
 const grandTotalBlock = document.getElementById('grandTotalBlock');
 const grandTotal = document.getElementById('grandTotal');
 
-function nowISO(){
-  return new Date().toISOString();
-}
+function nowISO(){ return new Date().toISOString(); }
 function fmtDT(d){
   return new Intl.DateTimeFormat(undefined, {
     year:'numeric', month:'short', day:'numeric',
-    hour:'2-digit', minute:'2-digit', second:'2-digit',
-    hour12:false
+    hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false
   }).format(d);
 }
 function fmtDate(d){
-  return new Intl.DateTimeFormat(undefined, {
-    weekday:'short', year:'numeric', month:'short', day:'numeric'
-  }).format(d);
+  return new Intl.DateTimeFormat(undefined, {weekday:'short', year:'numeric', month:'short', day:'numeric'}).format(d);
 }
 function fmtRange(start, end){
   const df = new Intl.DateTimeFormat(undefined, {month:'short', day:'numeric', year:'numeric'});
   return df.format(start) + ' – ' + df.format(end);
 }
 function parseTS(entry){
-  // Support both new iso and legacy ts-only entries
   if (entry.tsISO) return new Date(entry.tsISO);
-  // fallback: parse best-effort
   const d = new Date(entry.ts);
   if (!isNaN(d)) return d;
-  // worst case: now
   return new Date();
 }
 function toLocalDateKey(d){
-  // YYYY-MM-DD in local time
   const y = d.getFullYear();
   const m = String(d.getMonth()+1).padStart(2,'0');
   const day = String(d.getDate()).padStart(2,'0');
   return `${y}-${m}-${day}`;
 }
 function loadEntries(){
-  try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  }catch(e){ console.error(e); return []; }
+  try{ const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : []; }
+  catch(e){ console.error(e); return []; }
 }
-function saveEntries(arr){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
-}
+function saveEntries(arr){ localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); }
 function applyScrollLock(length){
   const root = document.documentElement, body = document.body;
-  if (length < MAX_ENTRIES){
-    root.classList.add('no-scroll'); body.classList.add('no-scroll');
-  } else {
-    root.classList.remove('no-scroll'); body.classList.remove('no-scroll');
+  if (length < MAX_ENTRIES){ root.classList.add('no-scroll'); body.classList.add('no-scroll'); }
+  else { root.classList.remove('no-scroll'); body.classList.remove('no-scroll'); }
+}
+
+// Build a Date from optional local date+time inputs. If blank, return null to use "now".
+function buildCustomDateOrNull(){
+  const dVal = dateInput.value;
+  const tVal = timeInput.value;
+  if (!dVal && !tVal) return null;
+  // If only one is provided, fill the other with today's date or 00:00:00
+  let [y,m,day] = (dVal ? dVal.split('-') : null) || [];
+  const base = new Date();
+  if (!y){ y = String(base.getFullYear()); m = String(base.getMonth()+1).padStart(2,'0'); day = String(base.getDate()).padStart(2,'0'); }
+  let h='00', mi='00', s='00';
+  if (tVal){
+    const parts = tVal.split(':');
+    h = parts[0]||'00'; mi = parts[1]||'00'; s = parts[2]||'00';
   }
+  const d = new Date(Number(y), Number(m)-1, Number(day), Number(h), Number(mi), Number(s), 0);
+  return d;
 }
 
 function render(){
@@ -86,7 +94,6 @@ function render(){
   }
   emptyState.hidden = true;
 
-  // Build maps
   const today = new Date();
   const last7Keys = [];
   for (let i=0;i<7;i++){
@@ -94,9 +101,10 @@ function render(){
     d.setDate(d.getDate()-i);
     last7Keys.push(toLocalDateKey(d));
   }
-  // Determine last calendar week range (Mon-Sun) before current week
+
+  // Last calendar week (Mon-Sun) before current week
   const curr = new Date(today);
-  const day = (curr.getDay()+6)%7; // 0=Mon..6=Sun
+  const day = (curr.getDay()+6)%7;
   const mondayThisWeek = new Date(curr);
   mondayThisWeek.setDate(curr.getDate()-day);
   mondayThisWeek.setHours(0,0,0,0);
@@ -106,7 +114,6 @@ function render(){
   lastWeekEnd.setDate(mondayThisWeek.getDate()-1);
   lastWeekEnd.setHours(23,59,59,999);
 
-  // Group entries
   const byDate = new Map();
   let totalAll = 0;
   let totalLastWeek = 0;
@@ -118,26 +125,24 @@ function render(){
     const key = toLocalDateKey(d);
     if (!byDate.has(key)) byDate.set(key, []);
     byDate.get(key).push({date:d, grams:g});
-    // Count toward "last week" only if within last week range and not within current last 7 days details
     if (d >= lastWeekStart && d <= lastWeekEnd && !last7Keys.includes(key)){
       totalLastWeek += g;
     }
   });
 
-  // Render last 7 days with details
+  // Render last 7 days details
   daysContainer.innerHTML = '';
   let anyDayShown = false;
   last7Keys.forEach(key=>{
     const items = (byDate.get(key)||[]).sort((a,b)=>a.date-b.date);
     if (items.length===0) return;
     anyDayShown = true;
-    const dParts = key.split('-'); // YYYY-MM-DD
-    const dObj = new Date(Number(dParts[0]), Number(dParts[1])-1, Number(dParts[2]));
-    const card = document.createElement('div');
-    card.className = 'day-card';
+    const [Y,M,D] = key.split('-');
+    const dObj = new Date(Number(Y), Number(M)-1, Number(D));
+    const card = document.createElement('div'); card.className = 'day-card';
 
     let dayTotal = 0;
-    const rows = items.map((it, idx)=>{
+    const rows = items.map(it=>{
       dayTotal += it.grams;
       const timeFmt = new Intl.DateTimeFormat(undefined, {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false}).format(it.date);
       return `<tr><td>${timeFmt}</td><td>${it.grams}</td></tr>`;
@@ -158,7 +163,7 @@ function render(){
   });
   last7Days.hidden = !anyDayShown;
 
-  // Render last week block (total only) and title with date range
+  // Last week total and title
   lastWeekTitle.textContent = `Last Week (${fmtRange(lastWeekStart, lastWeekEnd)})`;
   lastWeekTotal.textContent = `${totalLastWeek} g`;
   lastWeekBlock.hidden = (totalLastWeek===0);
@@ -169,16 +174,27 @@ function render(){
 }
 
 function addEntry(grams){
-  const arr = loadEntries();
-  arr.push({
-    ts: fmtDT(new Date()),
-    tsISO: nowISO(),
+  const custom = buildCustomDateOrNull();
+  const when = custom || new Date();
+  const entry = {
+    ts: fmtDT(when),
+    tsISO: when.toISOString(),
     grams: Number(grams)
-  });
+  };
+  const arr = loadEntries();
+  arr.push(entry);
   saveEntries(arr);
   render();
 }
 
+toggleCustom.addEventListener('click', ()=>{
+  const open = customPanel.hidden === false;
+  customPanel.hidden = open; // toggle
+  toggleCustom.textContent = open ? 'Custom time' : 'Hide time';
+});
+resetNow.addEventListener('click', ()=>{
+  dateInput.value = ''; timeInput.value = '';
+});
 addBtn.addEventListener('click', ()=>{
   const val = gramsInput.value.trim();
   if(!val || isNaN(val) || Number(val)<0){ gramsInput.focus(); return; }
@@ -186,7 +202,7 @@ addBtn.addEventListener('click', ()=>{
   gramsInput.value = '';
   gramsInput.focus();
 });
-gramsInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ addBtn.click(); }});
+gramsInput.addEventListener('keydown', e=>{ if(e.key==='Enter') addBtn.click(); });
 
 exportBtn.addEventListener('click', ()=>{
   const entries = loadEntries();

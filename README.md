@@ -1,9 +1,11 @@
-# Mass Gainer Logger (Minimalist)
+# Mass Gainer Logger — Custom Date/Time
 
-- Minimal, Google/Apple-like UI
-- Add grams, see **Last 7 days** with per-day detail and totals
-- **Last Week** shows one combined total with date range (previous calendar week)
-- **Grand Total** shows all-time total
+Minimalist UI with optional custom date & time:
+
+- Leave blank → uses device time automatically (default)
+- Click **Custom time** → reveals date + time fields
+- **Now** resets custom fields back to blank
+- Last 7 days (detailed), Last Week total with range, Grand Total
 - Scroll unlocks once entries reach `MAX_ENTRIES`
 
 ## Files
@@ -15,7 +17,7 @@
 Drag all files into a GitHub repo and enable GitHub Pages (Settings → Pages → Branch: `main`, folder: `/ (root)`).
 
 ## Tweaks
-Open `script.js` and adjust:
+Open `script.js`:
 ```js
 const MAX_ENTRIES = 10; // scroll lock threshold
-```
+``` 
