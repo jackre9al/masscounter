@@ -3,43 +3,57 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Milk / Mass Gainer Logger</title>
+  <title>Mass Gainer Logger</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-<header>
-  <h1>Milk / Mass Gainer Logger</h1>
-  <div class="small muted" id="tzInfo"></div>
-</header>
+  <main class="container">
+    <header class="topbar">
+      <div class="brand">
+        <span class="dot"></span>
+        <h1>Mass Gainer</h1>
+      </div>
+      <div class="meta" id="tzInfo"></div>
+    </header>
 
-<div class="card" id="app">
-  <div class="controls">
-    <label class="small muted" for="grams">Grams</label>
-    <input type="number" id="grams" placeholder="e.g. 50" min="0" step="1" />
-    <div class="spacer"></div>
-    <div class="center">
-      <button id="addBtn">Add</button>
-      <button class="ghost" id="exportBtn">Export CSV</button>
-      <button class="ghost" id="clearBtn">Clear</button>
-    </div>
-  </div>
+    <section class="panel input-panel">
+      <div class="field">
+        <label for="grams">Grams</label>
+        <input type="number" id="grams" placeholder="50" inputmode="numeric" min="0" step="1" />
+      </div>
+      <div class="actions">
+        <button id="addBtn" class="btn primary">Add</button>
+        <button id="exportBtn" class="btn">Export CSV</button>
+        <button id="clearBtn" class="btn danger">Clear</button>
+      </div>
+    </section>
 
-  <div id="listArea">
-    <div id="emptyState" class="empty">No entries yet. Add a grams value and press Enter or Add.</div>
-    <table id="logTable" style="display:none">
-      <thead>
-        <tr>
-          <th>Date &amp; time</th>
-          <th>Dose #</th>
-          <th>Grams</th>
-          <th id="howMuchCol">Cumulative (g)</th>
-        </tr>
-      </thead>
-      <tbody id="logBody"></tbody>
-    </table>
-  </div>
-</div>
+    <section id="contentArea" class="panel">
+      <div id="emptyState" class="empty">No entries yet. Add your first dose.</div>
 
-<script src="script.js"></script>
+      <div id="last7Days" class="section-block" hidden>
+        <div class="section-title">Last 7 days</div>
+        <div id="daysContainer" class="days"></div>
+      </div>
+
+      <div id="lastWeekBlock" class="section-block" hidden>
+        <div class="section-title" id="lastWeekTitle">Last Week</div>
+        <div class="summary-row">
+          <div class="summary-label">Total</div>
+          <div class="summary-value" id="lastWeekTotal">0 g</div>
+        </div>
+      </div>
+
+      <div id="grandTotalBlock" class="section-block" hidden>
+        <div class="section-title">Grand Total</div>
+        <div class="summary-row">
+          <div class="summary-label">All time</div>
+          <div class="summary-value" id="grandTotal">0 g</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
 </body>
 </html>
