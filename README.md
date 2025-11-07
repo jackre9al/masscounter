@@ -1,13 +1,9 @@
-# Mass Gainer Logger — Actions (Fixed)
+# Mass Gainer Logger — Revisions
+- Segmented time (HH/MM/SS) with auto-advance to the next field after two digits.
+- Always allow scrolling (removed scroll lock logic entirely).
 
-Fix for the action sheet showing on page load:
-- CSS now forces `[hidden]{display:none !important}` so the sheet stays hidden across browsers.
-- JS closes the sheet on render and on page load, and only opens it if a row was tapped.
-- Guarded `openSheet()` so it never opens without a valid target id.
+Other features kept:
+- Last 7 days with per-day totals, Last Week total (with range), Grand Total.
+- Desktop hover edit/delete, mobile tap action sheet; edit pre-fills values.
 
-Everything else remains:
-- Minimalist UI, edit/delete, 'Custom time' ↔ 'Auto time'
-- Last 7 days (detailed), Last Week total (with range), Grand Total
-- Scroll lock threshold via `MAX_ENTRIES`
-
-Deploy: replace your repo files with these and refresh.
+Deploy: replace files in your repo, commit, and refresh (Cmd+Shift+R if cached).

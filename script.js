@@ -1,6 +1,5 @@
-// Fixed: action sheet stays hidden until a row is tapped; robust [hidden] handling.
-const STORAGE_KEY = 'milkLoggerEntries_v5';
-const MAX_ENTRIES = 10;
+// Revisions: 1) Segmented HH/MM/SS with auto-advance; 2) Always allow scrolling (no scroll lock at all).
+const STORAGE_KEY = 'milkLoggerEntries_v6';
 
 const gramsInput = document.getElementById('grams');
 const addBtn = document.getElementById('addBtn');
@@ -11,7 +10,9 @@ const tzInfo = document.getElementById('tzInfo');
 const toggleCustom = document.getElementById('toggleCustom');
 const customPanel = document.getElementById('customPanel');
 const dateInput = document.getElementById('dateInput');
-const timeInput = document.getElementById('timeInput');
+const hh = document.getElementById('hh');
+const mm = document.getElementById('mm');
+const ss = document.getElementById('ss');
 const resetNow = document.getElementById('resetNow');
 
 const emptyState = document.getElementById('emptyState');
@@ -25,20 +26,17 @@ const lastWeekTotal = document.getElementById('lastWeekTotal');
 const grandTotalBlock = document.getElementById('grandTotalBlock');
 const grandTotal = document.getElementById('grandTotal');
 
-// Mobile action sheet
 const sheet = document.getElementById('actionSheet');
 const sheetEdit = document.getElementById('sheetEdit');
 const sheetDelete = document.getElementById('sheetDelete');
 const sheetCancel = document.getElementById('sheetCancel');
 let sheetTargetId = null;
-
 let editingId = null;
 
 function supportsHover(){
   return window.matchMedia && window.matchMedia('(hover: hover)').matches;
 }
 
-function nowISO(){ return new Date().toISOString(); }
 function fmtDT(d){
   return new Intl.DateTimeFormat(undefined, {
     year:'numeric', month:'short', day:'numeric',
@@ -69,11 +67,7 @@ function loadEntries(){
   catch(e){ console.error(e); return []; }
 }
 function saveEntries(arr){ localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); }
-function applyScrollLock(length){
-  const root = document.documentElement, body = document.body;
-  if (length < MAX_ENTRIES){ root.classList.add('no-scroll'); body.classList.add('no-scroll'); }
-  else { root.classList.remove('no-scroll'); body.classList.remove('no-scroll'); }
-}
+
 function ensureIds(arr){
   let changed = false;
   arr.forEach(e=>{
@@ -86,28 +80,24 @@ function ensureIds(arr){
   return arr;
 }
 
-// Build a Date from optional local date+time inputs. If blank, return null to use "now".
+// Build Date from segmented inputs; if all blank -> null
 function buildCustomDateOrNull(){
   const dVal = dateInput.value;
-  const tVal = timeInput.value;
-  if (!dVal && !tVal) return null;
-  let [y,m,day] = (dVal ? dVal.split('-') : []) || [];
+  const hour = hh.value.trim();
+  const min = mm.value.trim();
+  const sec = ss.value.trim();
+  if (!dVal && !hour && !min && !sec) return null;
   const base = new Date();
-  if (!y){ y = String(base.getFullYear()); m = String(base.getMonth()+1).padStart(2,'0'); day = String(base.getDate()).padStart(2,'0'); }
-  let h='00', mi='00', s='00';
-  if (tVal){
-    const parts = tVal.split(':');
-    h = parts[0]||'00'; mi = parts[1]||'00'; s = parts[2]||'00';
-  }
-  return new Date(Number(y), Number(m)-1, Number(day), Number(h), Number(mi), Number(s), 0);
+  const [y, m, day] = dVal ? dVal.split('-') : [String(base.getFullYear()), String(base.getMonth()+1).padStart(2,'0'), String(base.getDate()).padStart(2,'0')];
+  const H = Math.max(0, Math.min(23, parseInt(hour||'0', 10)));
+  const M = Math.max(0, Math.min(59, parseInt(min||'0', 10)));
+  const S = Math.max(0, Math.min(59, parseInt(sec||'0', 10)));
+  return new Date(Number(y), Number(m)-1, Number(day), H, M, S, 0);
 }
 
 function render(){
-  // Always make sure sheet is closed when re-rendering
   closeSheet(true);
-
   const entriesRaw = ensureIds(loadEntries());
-  applyScrollLock(entriesRaw.length);
 
   if (entriesRaw.length === 0){
     emptyState.hidden = false;
@@ -126,7 +116,6 @@ function render(){
     last7Keys.push(toLocalDateKey(d));
   }
 
-  // Last calendar week (Mon-Sun) before current week
   const curr = new Date(today);
   const day = (curr.getDay()+6)%7;
   const mondayThisWeek = new Date(curr);
@@ -154,7 +143,6 @@ function render(){
     }
   });
 
-  // Render last 7 days details
   daysContainer.innerHTML = '';
   let anyDayShown = false;
   last7Keys.forEach(key=>{
@@ -192,7 +180,6 @@ function render(){
   });
   last7Days.hidden = !anyDayShown;
 
-  // Wire up actions
   if (supportsHover()){
     daysContainer.querySelectorAll('.icon-btn').forEach(btn=>{
       const id = btn.getAttribute('data-id');
@@ -212,25 +199,25 @@ function render(){
     });
   }
 
-  // Last week total and title
   lastWeekTitle.textContent = `Last Week (${fmtRange(lastWeekStart, lastWeekEnd)})`;
   lastWeekTotal.textContent = `${totalLastWeek} g`;
   lastWeekBlock.hidden = (totalLastWeek===0);
 
-  // Grand total
   grandTotal.textContent = `${totalAll} g`;
   grandTotalBlock.hidden = false;
 }
 
 function openSheet(){
-  if (!sheetTargetId) return; // do not open if no target
+  if (!sheetTargetId) return;
   sheet.hidden = false;
-  document.body.classList.add('no-scroll');
 }
 function closeSheet(silent=false){
-  if (sheet.hidden && silent) return;
+  if (silent){
+    sheet.hidden = true;
+    sheetTargetId = null;
+    return;
+  }
   sheet.hidden = true;
-  document.body.classList.remove('no-scroll');
   sheetTargetId = null;
 }
 sheetCancel.addEventListener('click', ()=>closeSheet());
@@ -268,7 +255,7 @@ function onStartEdit(id){
   customPanel.hidden = false;
   toggleCustom.textContent = 'Auto time';
   dateInput.value = `${y}-${m}-${day}`;
-  timeInput.value = `${h}:${mi}:${s}`;
+  hh.value = h; mm.value = mi; ss.value = s;
 
   addBtn.textContent = 'Save';
   gramsInput.focus();
@@ -309,14 +296,13 @@ toggleCustom.addEventListener('click', ()=>{
   if (open){
     customPanel.hidden = true;
     toggleCustom.textContent = 'Custom time';
-    dateInput.value = '';
-    timeInput.value = '';
+    dateInput.value = ''; hh.value=''; mm.value=''; ss.value='';
   } else {
     customPanel.hidden = false;
     toggleCustom.textContent = 'Auto time';
   }
 });
-resetNow.addEventListener('click', ()=>{ dateInput.value=''; timeInput.value=''; });
+resetNow.addEventListener('click', ()=>{ dateInput.value=''; hh.value=''; mm.value=''; ss.value=''; });
 
 addBtn.addEventListener('click', ()=>{
   const val = gramsInput.value.trim();
@@ -332,6 +318,21 @@ addBtn.addEventListener('click', ()=>{
   gramsInput.focus();
 });
 gramsInput.addEventListener('keydown', e=>{ if(e.key==='Enter') addBtn.click(); });
+
+// Auto-advance in HH/MM/SS fields
+function onlyDigits(str){ return str.replace(/\D/g,''); }
+function handleSegInput(curr, next, max){
+  curr.value = onlyDigits(curr.value).slice(0,2);
+  // If user typed 2 digits, clamp and jump
+  if (curr.value.length === 2){
+    const n = Math.max(0, Math.min(max, parseInt(curr.value,10)));
+    curr.value = String(n).padStart(2,'0');
+    if (next) next.focus();
+  }
+}
+hh.addEventListener('input', ()=>handleSegInput(hh, mm, 23));
+mm.addEventListener('input', ()=>handleSegInput(mm, ss, 59));
+ss.addEventListener('input', ()=>handleSegInput(ss, null, 59));
 
 exportBtn.addEventListener('click', ()=>{
   const entries = loadEntries();
@@ -362,7 +363,5 @@ clearBtn.addEventListener('click', ()=>{
 document.addEventListener('DOMContentLoaded', ()=>{
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'local time';
   tzInfo.textContent = `Time zone: ${tz}`;
-  // Force-close sheet on startup for safety
-  closeSheet(true);
   render();
 });

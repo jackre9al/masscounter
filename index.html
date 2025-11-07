@@ -41,8 +41,14 @@
           <input type="date" id="dateInput" />
         </div>
         <div class="field">
-          <label for="timeInput">Time</label>
-          <input type="time" id="timeInput" step="1" />
+          <label>Time</label>
+          <div class="time-seg">
+            <input id="hh" class="seg" type="text" inputmode="numeric" maxlength="2" placeholder="HH">
+            <span>:</span>
+            <input id="mm" class="seg" type="text" inputmode="numeric" maxlength="2" placeholder="MM">
+            <span>:</span>
+            <input id="ss" class="seg" type="text" inputmode="numeric" maxlength="2" placeholder="SS">
+          </div>
         </div>
         <div class="field small-field">
           <label class="vis-label">Reset</label>
