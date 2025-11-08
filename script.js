@@ -1,5 +1,5 @@
-// Revisions: 1) Segmented HH/MM/SS with auto-advance; 2) Always allow scrolling (no scroll lock at all).
-const STORAGE_KEY = 'milkLoggerEntries_v6';
+// Sticky header + date auto-close + number pad Done => auto Add
+const STORAGE_KEY = 'milkLoggerEntries_v7';
 
 const gramsInput = document.getElementById('grams');
 const addBtn = document.getElementById('addBtn');
@@ -207,20 +207,9 @@ function render(){
   grandTotalBlock.hidden = false;
 }
 
-function openSheet(){
-  if (!sheetTargetId) return;
-  sheet.hidden = false;
-}
-function closeSheet(silent=false){
-  if (silent){
-    sheet.hidden = true;
-    sheetTargetId = null;
-    return;
-  }
-  sheet.hidden = true;
-  sheetTargetId = null;
-}
-sheetCancel.addEventListener('click', ()=>closeSheet());
+function openSheet(){ if (!sheetTargetId) return; sheet.hidden = false; }
+function closeSheet(){ sheet.hidden = true; sheetTargetId = null; }
+sheetCancel.addEventListener('click', closeSheet);
 sheet.addEventListener('click', (e)=>{ if(e.target===sheet) closeSheet(); });
 sheetDelete.addEventListener('click', ()=>{ if(sheetTargetId){ onDelete(sheetTargetId); } closeSheet(); });
 sheetEdit.addEventListener('click', ()=>{ if(sheetTargetId){ onStartEdit(sheetTargetId); } closeSheet(); });
@@ -304,9 +293,10 @@ toggleCustom.addEventListener('click', ()=>{
 });
 resetNow.addEventListener('click', ()=>{ dateInput.value=''; hh.value=''; mm.value=''; ss.value=''; });
 
-addBtn.addEventListener('click', ()=>{
+// Auto-add on iOS "Done" (change) and Enter
+function tryAddFromField(){
   const val = gramsInput.value.trim();
-  if(!val || isNaN(val) || Number(val)<0){ gramsInput.focus(); return; }
+  if(!val || isNaN(val) || Number(val)<0) return;
   const custom = buildCustomDateOrNull();
   const when = custom || new Date();
   if (editingId){
@@ -316,14 +306,15 @@ addBtn.addEventListener('click', ()=>{
   }
   gramsInput.value = '';
   gramsInput.focus();
-});
-gramsInput.addEventListener('keydown', e=>{ if(e.key==='Enter') addBtn.click(); });
+}
+addBtn.addEventListener('click', tryAddFromField);
+gramsInput.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); tryAddFromField(); }});
+gramsInput.addEventListener('change', tryAddFromField);
 
-// Auto-advance in HH/MM/SS fields
+// Segmented time auto-advance + clamp
 function onlyDigits(str){ return str.replace(/\D/g,''); }
 function handleSegInput(curr, next, max){
   curr.value = onlyDigits(curr.value).slice(0,2);
-  // If user typed 2 digits, clamp and jump
   if (curr.value.length === 2){
     const n = Math.max(0, Math.min(max, parseInt(curr.value,10)));
     curr.value = String(n).padStart(2,'0');
@@ -333,6 +324,11 @@ function handleSegInput(curr, next, max){
 hh.addEventListener('input', ()=>handleSegInput(hh, mm, 23));
 mm.addEventListener('input', ()=>handleSegInput(mm, ss, 59));
 ss.addEventListener('input', ()=>handleSegInput(ss, null, 59));
+
+// Date picker: auto-close once date picked (final tap)
+function closeDatePicker(){ dateInput.blur(); }
+dateInput.addEventListener('change', closeDatePicker);
+dateInput.addEventListener('input', closeDatePicker);
 
 exportBtn.addEventListener('click', ()=>{
   const entries = loadEntries();

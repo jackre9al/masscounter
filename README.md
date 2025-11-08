@@ -1,9 +1,10 @@
-# Mass Gainer Logger — Revisions
-- Segmented time (HH/MM/SS) with auto-advance to the next field after two digits.
-- Always allow scrolling (removed scroll lock logic entirely).
+# Mass Gainer Logger — Sticky + Auto Actions
 
-Other features kept:
-- Last 7 days with per-day totals, Last Week total (with range), Grand Total.
-- Desktop hover edit/delete, mobile tap action sheet; edit pre-fills values.
+What’s new
+- **Header stays fixed** while logs scroll behind it.
+- **Date picker** closes itself after you tap a date (final tap = done).
+- **Number pad “Done”** now auto-adds the entry (triggers on `change` and `Enter`).
 
-Deploy: replace files in your repo, commit, and refresh (Cmd+Shift+R if cached).
+Everything else stays the same: segmented time with auto-jump, edit/delete, Last 7 days + Last Week total + Grand Total.
+
+Deploy: replace files, commit, and hard refresh on iPhone if cached.

@@ -1,4 +1,4 @@
-/* Minimalist with segmented time inputs and no scroll lock */
+/* Minimalist, sticky header, native momentum scroll, segmented time */
 :root{
   --bg:#ffffff;
   --fg:#111314;
@@ -11,7 +11,7 @@
   font-synthesis-weight:none;
 }
 *{box-sizing:border-box}
-html,body{height:100%}
+html,body{height:100%; -webkit-overflow-scrolling:touch}
 [hidden]{display:none !important}
 .sheet[hidden]{display:none !important}
 
@@ -25,14 +25,20 @@ body{
   -moz-osx-font-smoothing:grayscale;
 }
 .container{max-width:880px;margin:0 auto;padding:24px 16px 48px}
-.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.topbar{
+  position:sticky; top:0; z-index:10;
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:16px; padding-bottom:8px;
+  background:var(--bg);
+  border-bottom:1px solid var(--line);
+}
 .brand{display:flex;align-items:center;gap:10px}
 .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--brand)}
 h1{font-size:18px;margin:0;letter-spacing:.2px;font-weight:700}
 .meta{font-size:13px;color:var(--muted)}
 
 .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:0 1px 2px rgba(0,0,0,0.03)}
-.input-panel{display:flex;gap:12px;align-items:end;margin-bottom:8px;flex-wrap:wrap}
+.input-panel{display:flex;gap:12px;align-items:end;margin:16px 0;flex-wrap:wrap}
 .field{display:flex;flex-direction:column;gap:6px;min-width:160px}
 .small-field{min-width:auto}
 label{font-size:13px;color:var(--muted)}
