@@ -17,9 +17,12 @@
     </header>
 
     <section class="panel input-panel">
-      <div class="field">
+      <div class="field field-row">
         <label for="grams">Grams</label>
-        <input type="number" id="grams" placeholder="50" inputmode="numeric" min="0" step="1" />
+        <div class="inline">
+          <input type="number" id="grams" placeholder="50" inputmode="numeric" min="0" step="1" />
+          <button id="clearFieldsBtn" class="btn ghost">Clear fields</button>
+        </div>
       </div>
 
       <div class="field small-field">
@@ -30,7 +33,7 @@
       <div class="actions">
         <button id="addBtn" class="btn primary">Add</button>
         <button id="exportBtn" class="btn">Export CSV</button>
-        <button id="clearBtn" class="btn danger">Clear</button>
+        <button id="clearLogsBtn" class="btn danger">Clear Logs</button>
       </div>
     </section>
 

@@ -1,10 +1,11 @@
-// Sticky header + date auto-close + number pad Done => auto Add
-const STORAGE_KEY = 'milkLoggerEntries_v7';
+// iOS-friendly: sticky header, date change-only blur, Clear Logs/Fields
+const STORAGE_KEY = 'milkLoggerEntries_v8';
 
 const gramsInput = document.getElementById('grams');
 const addBtn = document.getElementById('addBtn');
 const exportBtn = document.getElementById('exportBtn');
-const clearBtn = document.getElementById('clearBtn');
+const clearLogsBtn = document.getElementById('clearLogsBtn');
+const clearFieldsBtn = document.getElementById('clearFieldsBtn');
 const tzInfo = document.getElementById('tzInfo');
 
 const toggleCustom = document.getElementById('toggleCustom');
@@ -218,11 +219,9 @@ function onDelete(id){
   const arr = loadEntries();
   const idx = arr.findIndex(e=>e.id===id);
   if (idx>-1){
-    if(confirm('Delete this entry?')){
-      arr.splice(idx,1);
-      saveEntries(arr);
-      render();
-    }
+    arr.splice(idx,1);
+    saveEntries(arr);
+    render();
   }
 }
 
@@ -325,10 +324,8 @@ hh.addEventListener('input', ()=>handleSegInput(hh, mm, 23));
 mm.addEventListener('input', ()=>handleSegInput(mm, ss, 59));
 ss.addEventListener('input', ()=>handleSegInput(ss, null, 59));
 
-// Date picker: auto-close once date picked (final tap)
-function closeDatePicker(){ dateInput.blur(); }
-dateInput.addEventListener('change', closeDatePicker);
-dateInput.addEventListener('input', closeDatePicker);
+// Date picker: CLOSE ONLY when a date was actually picked
+dateInput.addEventListener('change', ()=>{ dateInput.blur(); });
 
 exportBtn.addEventListener('click', ()=>{
   const entries = loadEntries();
@@ -348,12 +345,20 @@ exportBtn.addEventListener('click', ()=>{
   URL.revokeObjectURL(url);
 });
 
-clearBtn.addEventListener('click', ()=>{
-  if(!confirm('Clear all entries on this device?')) return;
+// Clear Logs (no confirm) and Clear fields
+clearLogsBtn.addEventListener('click', ()=>{
   localStorage.removeItem(STORAGE_KEY);
   editingId = null;
   addBtn.textContent = 'Add';
   render();
+});
+clearFieldsBtn.addEventListener('click', ()=>{
+  gramsInput.value = '';
+  dateInput.value = '';
+  hh.value = ''; mm.value = ''; ss.value = '';
+  customPanel.hidden = true;
+  toggleCustom.textContent = 'Custom time';
+  gramsInput.focus();
 });
 
 document.addEventListener('DOMContentLoaded', ()=>{

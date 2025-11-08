@@ -1,4 +1,4 @@
-/* Minimalist, sticky header, native momentum scroll, segmented time */
+/* Minimalist, sticky header, momentum scroll, iOS fixes */
 :root{
   --bg:#ffffff;
   --fg:#111314;
@@ -11,7 +11,7 @@
   font-synthesis-weight:none;
 }
 *{box-sizing:border-box}
-html,body{height:100%; -webkit-overflow-scrolling:touch}
+html,body{height:100%; -webkit-overflow-scrolling:touch; overscroll-behavior:contain}
 [hidden]{display:none !important}
 .sheet[hidden]{display:none !important}
 
@@ -40,6 +40,7 @@ h1{font-size:18px;margin:0;letter-spacing:.2px;font-weight:700}
 .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:0 1px 2px rgba(0,0,0,0.03)}
 .input-panel{display:flex;gap:12px;align-items:end;margin:16px 0;flex-wrap:wrap}
 .field{display:flex;flex-direction:column;gap:6px;min-width:160px}
+.field-row .inline{display:flex;gap:8px;align-items:center}
 .small-field{min-width:auto}
 label{font-size:13px;color:var(--muted)}
 .vis-label{visibility:hidden}
@@ -65,6 +66,7 @@ input[type="number"]::-webkit-inner-spin-button{appearance:none;margin:0}
 .btn.primary{background:var(--fg);color:#fff;border-color:var(--fg)}
 .btn.danger{color:#fff;background:var(--danger);border-color:var(--danger)}
 .btn.subtle{background:#fff;border-color:var(--line);color:#111}
+.btn.ghost{background:transparent;border-color:var(--line);color:#444}
 
 .custom-panel{margin-bottom:8px}
 .custom-row{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
@@ -99,7 +101,7 @@ input[type="number"]::-webkit-inner-spin-button{appearance:none;margin:0}
   cursor:pointer;
 }
 .row-actions .icon-btn:hover{border-color:#ddd}
-.row-actions .trash{color:var(--danger); font-weight:700}
+.row-actions .trash{color:#e11d48; font-weight:700}
 
 @media (hover:hover){
   .row:hover .row-actions{opacity:1}
@@ -115,7 +117,7 @@ input[type="number"]::-webkit-inner-spin-button{appearance:none;margin:0}
 .sheet-title{font-weight:700; padding:8px 4px 10px; border-bottom:1px solid var(--line); margin-bottom:8px}
 .sheet-actions{display:flex; gap:8px; padding:4px}
 .sheet-btn{flex:1; padding:12px; border:1px solid var(--line); border-radius:12px; background:#fff; font-weight:600; cursor:pointer}
-.sheet-btn.danger{background:var(--danger); border-color:var(--danger); color:#fff}
+.sheet-btn.danger{background:#e11d48; border-color:#e11d48; color:#fff}
 .sheet-cancel{width:100%; margin-top:8px; padding:12px; border-radius:12px; border:1px solid var(--line); background:#fff; cursor:pointer}
 
 @media (max-width:600px){

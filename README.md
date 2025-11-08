@@ -1,10 +1,9 @@
-# Mass Gainer Logger — Sticky + Auto Actions
+# Mass Gainer Logger — iOS fixes
 
-What’s new
-- **Header stays fixed** while logs scroll behind it.
-- **Date picker** closes itself after you tap a date (final tap = done).
-- **Number pad “Done”** now auto-adds the entry (triggers on `change` and `Enter`).
+Changes
+- **Date picker** no longer auto-closes when opened on iOS; it blurs only after you select a date.
+- **Clear Logs** button replaces the old confirm dialog (one tap clears all logs).
+- **Clear fields** beside *Grams* wipes grams + custom date/time and hides the custom panel.
+- **Reduced header bounce** via `overscroll-behavior: contain` (Safari/iOS 16+).
 
-Everything else stays the same: segmented time with auto-jump, edit/delete, Last 7 days + Last Week total + Grand Total.
-
-Deploy: replace files, commit, and hard refresh on iPhone if cached.
+Deploy: replace files, commit, then hard refresh on iPhone (pull to refresh or Safari reload).
