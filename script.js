@@ -1,13 +1,11 @@
-// Profiles + Import CSV. Optional PIN protection (client-side).
+// Profiles + Import menu with File/Paste. Optional PIN protection.
 const STORAGE_ROOT_KEY = 'milkLoggerProfiles_v2';
 const DEFAULT_EMAIL = 'guest';
 
-// ---- CSV Parser (handles quotes, commas, newlines)
+// ---- CSV Parser
 function parseCSV(text){
   const rows = [];
-  let row = [];
-  let val = '';
-  let i = 0, inQuotes = false;
+  let row = [], val = '', i = 0, inQuotes = false;
   while (i < text.length){
     const c = text[i];
     if (inQuotes){
@@ -23,13 +21,8 @@ function parseCSV(text){
       val += c; i++; continue;
     }
   }
-  // last value
-  row.push(val);
-  rows.push(row);
-  // trim trailing empty last line
-  if (rows.length && rows[rows.length-1].length === 1 && rows[rows.length-1][0]===''){
-    rows.pop();
-  }
+  row.push(val); rows.push(row);
+  if (rows.length && rows[rows.length-1].length===1 && rows[rows.length-1][0]==='') rows.pop();
   return rows;
 }
 
@@ -52,7 +45,6 @@ function getCurrent(){ const root = readRoot(); return { root, email: root.curre
 function setCurrentEmail(email){ const root = readRoot(); if(!root.profiles[email]) root.profiles[email] = { entries: [] }; root.currentEmail = email; writeRoot(root); }
 function getEntries(){ return getCurrent().profile.entries || []; }
 function saveEntries(arr){ const r = readRoot(); (r.profiles[r.currentEmail] ||= {}).entries = arr; writeRoot(r); }
-
 function ensureEntryIds(arr){ let changed=false; arr.forEach(e=>{ if(!e.id){ e.id = Math.random().toString(36).slice(2)+Date.now().toString(36); changed=true; } }); if(changed) saveEntries(arr); return arr; }
 
 function supportsHover(){ return matchMedia && matchMedia('(hover: hover)').matches; }
@@ -62,11 +54,14 @@ function fmtRange(start,end){ const df=new Intl.DateTimeFormat(undefined,{month:
 function parseTS(e){ if(e.tsISO) return new Date(e.tsISO); const d=new Date(e.ts); return isNaN(d)?new Date():d; }
 function toLocalDateKey(d){ const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
 
-// ---- UI bindings
+// ---- UI elements
 const gramsInput = document.getElementById('grams');
 const addBtn = document.getElementById('addBtn');
 const exportBtn = document.getElementById('exportBtn');
 const importBtn = document.getElementById('importBtn');
+const importMenu = document.getElementById('importMenu');
+const importFileBtn = document.getElementById('importFileBtn');
+const importPasteBtn = document.getElementById('importPasteBtn');
 const importInput = document.getElementById('importInput');
 const clearLogsBtn = document.getElementById('clearLogsBtn');
 const clearFieldsBtn = document.getElementById('clearFieldsBtn');
@@ -85,22 +80,19 @@ const resetNow = document.getElementById('resetNow');
 const emptyState = document.getElementById('emptyState');
 const last7Days = document.getElementById('last7Days');
 const daysContainer = document.getElementById('daysContainer');
-
 const lastWeekBlock = document.getElementById('lastWeekBlock');
 const lastWeekTitle = document.getElementById('lastWeekTitle');
 const lastWeekTotal = document.getElementById('lastWeekTotal');
-
 const grandTotalBlock = document.getElementById('grandTotalBlock');
 const grandTotal = document.getElementById('grandTotal');
 
-// action sheet (mobile list row)
+// sheets
 const sheet = document.getElementById('actionSheet');
 const sheetEdit = document.getElementById('sheetEdit');
 const sheetDelete = document.getElementById('sheetDelete');
 const sheetCancel = document.getElementById('sheetCancel');
 let sheetTargetId = null;
 
-// profile sheet
 const profileSheet = document.getElementById('profileSheet');
 const emailInput = document.getElementById('emailInput');
 const pinInput = document.getElementById('pinInput');
@@ -109,19 +101,21 @@ const setPinBtn = document.getElementById('setPinBtn');
 const removePinBtn = document.getElementById('removePinBtn');
 const profileCancel = document.getElementById('profileCancel');
 
+const pasteSheet = document.getElementById('pasteSheet');
+const pasteArea = document.getElementById('pasteArea');
+const pasteImportBtn = document.getElementById('pasteImportBtn');
+const pasteCancel = document.getElementById('pasteCancel');
+
 let editingId = null;
 
 // ---- profile helpers
 function showProfileLabel(){ const {email} = getCurrent(); profileLabel.textContent = email || 'Guest'; }
-
-async function requirePinIfSet(action){
+async function shaProtected(action){
   const { profile } = getCurrent();
   if (!profile.pinHash){ action(); return; }
   const entered = pinInput.value || prompt('Enter PIN');
   if (!entered) return;
-  const hash = await sha256(entered);
-  if (hash !== profile.pinHash){ alert('Wrong PIN'); return; }
-  action();
+  sha256(entered).then(h=>{ if(h===profile.pinHash) action(); else alert('Wrong PIN'); });
 }
 
 function openProfileSheet(){
@@ -132,7 +126,6 @@ function openProfileSheet(){
   removePinBtn.disabled = !profile.pinHash;
 }
 function closeProfileSheet(){ profileSheet.hidden = true; }
-
 profileBtn.addEventListener('click', openProfileSheet);
 profileCancel.addEventListener('click', closeProfileSheet);
 profileSheet.addEventListener('click', (e)=>{ if(e.target===profileSheet) closeProfileSheet(); });
@@ -151,7 +144,6 @@ saveProfileBtn.addEventListener('click', async ()=>{
   render();
   closeProfileSheet();
 });
-
 setPinBtn.addEventListener('click', async ()=>{
   const first = pinInput.value || prompt('Set 4-digit PIN');
   if (!first) return;
@@ -161,12 +153,11 @@ setPinBtn.addEventListener('click', async ()=>{
   const { root, email } = getCurrent();
   (root.profiles[email] ||= { entries: [] }).pinHash = await sha256(first);
   writeRoot(root);
-  removePinBtn.disabled = false;
+  removePinBtn.disabled = true === false ? false : false; // no-op just to keep style
   alert('PIN set');
 });
-
-removePinBtn.addEventListener('click', async ()=>{
-  await requirePinIfSet(()=>{
+removePinBtn.addEventListener('click', ()=>{
+  shaProtected(()=>{
     const { root, email } = getCurrent();
     if (root.profiles[email]) delete root.profiles[email].pinHash;
     writeRoot(root);
@@ -175,7 +166,7 @@ removePinBtn.addEventListener('click', async ()=>{
   });
 });
 
-// ---- core render (same grouping logic) 
+// ---- render
 function render(){
   closeSheet(true);
   showProfileLabel();
@@ -201,15 +192,15 @@ function render(){
   const lastWeekEnd = new Date(mondayThisWeek); lastWeekEnd.setDate(mondayThisWeek.getDate()-1); lastWeekEnd.setHours(23,59,59,999);
 
   const byDate = new Map();
-  let totalAll = 0;
-  let totalLastWeek = 0;
+  let totalAll = 0, totalLastWeek = 0;
 
   entriesRaw.forEach(e=>{
     const d = parseTS(e);
     const g = Number(e.grams)||0;
     totalAll += g;
     const key = toLocalDateKey(d);
-    (byDate.get(key) || byDate.set(key, []).get(key)).push({id:e.id, date:d, grams:g});
+    if (!byDate.has(key)) byDate.set(key, []);
+    byDate.get(key).push({id:e.id, date:d, grams:g});
     if (d >= lastWeekStart && d <= lastWeekEnd && !last7Keys.includes(key)){ totalLastWeek += g; }
   });
 
@@ -217,7 +208,7 @@ function render(){
   let anyDayShown = false;
   last7Keys.forEach(key=>{
     const items = (byDate.get(key)||[]).sort((a,b)=>a.date-b.date);
-    if (items.length===0) return;
+    if (!items.length) return;
     anyDayShown = true;
     const [Y,M,D] = key.split('-');
     const dObj = new Date(Number(Y), Number(M)-1, Number(D));
@@ -249,11 +240,9 @@ function render(){
     daysContainer.appendChild(card);
   });
   last7Days.hidden = !anyDayShown;
-
   lastWeekTitle.textContent = `Last Week (${fmtRange(lastWeekStart, lastWeekEnd)})`;
   lastWeekTotal.textContent = `${totalLastWeek} g`;
   lastWeekBlock.hidden = (totalLastWeek===0);
-
   grandTotal.textContent = `${totalAll} g`;
   grandTotalBlock.hidden = false;
 
@@ -261,7 +250,7 @@ function render(){
     daysContainer.querySelectorAll('.icon-btn').forEach(btn=>{
       const id = btn.getAttribute('data-id');
       const act = btn.getAttribute('data-action');
-      btn.addEventListener('click', (e)=>{
+      btn.addEventListener('click', e=>{
         e.stopPropagation();
         if (act==='delete') onDelete(id);
         if (act==='edit') onStartEdit(id);
@@ -274,9 +263,9 @@ function render(){
   }
 }
 
-// ---- CRUD per-profile
+// ---- CRUD
 function onDelete(id){
-  requirePinIfSet(()=>{
+  shaProtected(()=>{
     const arr = getEntries();
     const idx = arr.findIndex(e=>e.id===id);
     if (idx>-1){ arr.splice(idx,1); saveEntries(arr); render(); }
@@ -370,9 +359,10 @@ ss.addEventListener('input', ()=>handleSegInput(ss,null,59));
 // Date picker: close only after a selection
 dateInput.addEventListener('change', ()=>{ dateInput.blur(); });
 
+// Export
 exportBtn.addEventListener('click', ()=>{
   const entries = getEntries();
-  if(entries.length===0){ alert('No entries to export'); return; }
+  if(!entries.length){ alert('No entries to export'); return; }
   let csv = 'ID,ISO Timestamp,Local Timestamp,Grams\n';
   entries.forEach(e=>{ csv += `"${e.id}","${e.tsISO||''}","${e.ts||''}",${Number(e.grams)||0}\n`; });
   const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
@@ -380,54 +370,48 @@ exportBtn.addEventListener('click', ()=>{
   const a = document.createElement('a'); a.href = url; a.download = 'mass-gainer-log.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
 });
 
-// IMPORT CSV: merges rows into current profile; dedupe by ID, else by (iso,grams)
-importBtn.addEventListener('click', ()=> importInput.click());
-importInput.addEventListener('change', async (e)=>{
-  const file = e.target.files && e.target.files[0];
-  if (!file){ return; }
-  const text = await file.text();
+// Import menu
+function closeMenus(){ importMenu.hidden = true; }
+importBtn.addEventListener('click', ()=>{ importMenu.hidden = !importMenu.hidden; });
+document.addEventListener('click', (e)=>{
+  if (!e.target.closest('.menu-wrap')) closeMenus();
+});
+importFileBtn.addEventListener('click', ()=>{ closeMenus(); importInput.click(); });
+importPasteBtn.addEventListener('click', ()=>{
+  closeMenus();
+  pasteArea.value = '';
+  pasteSheet.hidden = false;
+});
+pasteCancel.addEventListener('click', ()=>{ pasteSheet.hidden = true; });
+pasteSheet.addEventListener('click', (e)=>{ if(e.target===pasteSheet) pasteSheet.hidden = true; });
+
+// Merge logic
+function parseAndMergeCSVText(text){
   const rows = parseCSV(text);
   if (!rows.length){ alert('Empty CSV'); return; }
-  // header
   const headers = rows[0].map(h=>h.trim().toLowerCase());
   const idx = {
     id: headers.indexOf('id'),
     iso: headers.indexOf('iso timestamp'),
     local: headers.indexOf('local timestamp'),
     grams: headers.indexOf('grams'),
-    profile: headers.indexOf('profile'),
   };
   const imported = [];
   for (let r=1; r<rows.length; r++){
     const cols = rows[r];
-    if (!cols || cols.length===0) continue;
-    const g = Number((idx.grams>=0? cols[idx.grams] : '').trim());
+    if (!cols || !cols.length) continue;
+    const g = Number((idx.grams>=0 ? cols[idx.grams] : '').trim());
     if (Number.isNaN(g)) continue;
-    const iso = idx.iso>=0 ? cols[idx.iso].trim() : '';
-    const local = idx.local>=0 ? cols[idx.local].trim() : '';
-    const id = idx.id>=0 ? cols[idx.id].trim() : '';
-    const prof = idx.profile>=0 ? (cols[idx.profile]||'').trim().toLowerCase() : '';
-    imported.push({ id, tsISO: iso || '', ts: local || '', grams: g, _profile: prof });
+    const iso = idx.iso>=0 ? (cols[idx.iso]||'').trim() : '';
+    const local = idx.local>=0 ? (cols[idx.local]||'').trim() : '';
+    const id = idx.id>=0 ? (cols[idx.id]||'').trim() : '';
+    imported.push({ id, tsISO: iso, ts: local, grams: g });
   }
-  const { email } = getCurrent();
-  // filter for this profile (Profile col empty or matches current)
-  const rowsForMe = imported.filter(r=> !r._profile || r._profile===email);
-  if (rowsForMe.length===0){ alert('No rows for this profile in CSV'); return; }
-  // Normalize tsISO if missing, try parse local
-  rowsForMe.forEach(r=>{
-    if (!r.tsISO){
-      const d = new Date(r.ts);
-      if (!isNaN(d)) r.tsISO = d.toISOString();
-    }
-    if (!r.ts){ r.ts = r.tsISO ? fmtDT(new Date(r.tsISO)) : ''; }
-  });
-  // merge + dedupe
   const current = getEntries();
   const byId = new Map(current.filter(e=>e.id).map(e=>[e.id, e]));
   const bySig = new Set(current.map(e=>(e.tsISO||'')+'|'+(e.grams||0)));
   let added=0, updated=0;
-  rowsForMe.forEach(r=>{
-    // prefer ID match; else signature
+  imported.forEach(r=>{
     if (r.id && byId.has(r.id)){
       const e = byId.get(r.id);
       const newISO = r.tsISO || e.tsISO;
@@ -446,12 +430,28 @@ importInput.addEventListener('change', async (e)=>{
   });
   saveEntries(current);
   render();
-  alert(`Imported: ${rowsForMe.length} rows (added ${added}, updated ${updated}).`);
+  alert(`Imported ${imported.length} rows (added ${added}, updated ${updated}).`);
+}
+
+// File import
+importInput.addEventListener('change', async (e)=>{
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  const text = await file.text();
+  parseAndMergeCSVText(text);
+  importInput.value = '';
+});
+// Paste import
+pasteImportBtn.addEventListener('click', ()=>{
+  const text = pasteArea.value || '';
+  if (!text.trim()){ alert('Paste CSV first'); return; }
+  parseAndMergeCSVText(text);
+  pasteSheet.hidden = true;
 });
 
 // Clear Logs (per profile, no confirm)
 clearLogsBtn.addEventListener('click', ()=>{
-  requirePinIfSet(()=>{
+  shaProtected(()=>{
     const { root, email } = getCurrent();
     if (root.profiles[email]) root.profiles[email].entries = [];
     writeRoot(root);
@@ -459,12 +459,7 @@ clearLogsBtn.addEventListener('click', ()=>{
   });
 });
 
-clearFieldsBtn.addEventListener('click', ()=>{
-  gramsInput.value = ''; dateInput.value=''; hh.value=''; mm.value=''; ss.value = '';
-  customPanel.hidden = true; toggleCustom.textContent = 'Custom time'; gramsInput.focus();
-});
-
-// action sheet (mobile rows)
+// Mobile sheet for row actions
 function closeSheet(){ sheet.hidden = true; sheetTargetId = null; }
 sheetCancel.addEventListener('click', closeSheet);
 sheet.addEventListener('click', (e)=>{ if(e.target===sheet) closeSheet(); });

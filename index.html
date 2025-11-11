@@ -35,9 +35,17 @@
 
       <div class="actions">
         <button id="addBtn" class="btn primary">Add</button>
-        <button id="exportBtn" class="btn">Export CSV</button>
-        <button id="importBtn" class="btn">Import CSV</button>
+
+        <div class="menu-wrap">
+          <button id="importBtn" class="btn">Import ▾</button>
+          <div id="importMenu" class="menu" hidden>
+            <button id="importFileBtn" class="menu-item">From file…</button>
+            <button id="importPasteBtn" class="menu-item">Paste CSV…</button>
+          </div>
+        </div>
         <input id="importInput" type="file" accept=".csv,text/csv" hidden />
+
+        <button id="exportBtn" class="btn">Export CSV</button>
         <button id="clearLogsBtn" class="btn danger">Clear Logs</button>
       </div>
     </section>
@@ -120,6 +128,20 @@
         <button id="removePinBtn" class="sheet-btn">Remove PIN</button>
       </div>
       <button id="profileCancel" class="sheet-cancel">Close</button>
+    </div>
+  </div>
+
+  <!-- Paste CSV sheet -->
+  <div id="pasteSheet" class="sheet" hidden>
+    <div class="sheet-card">
+      <div class="sheet-title">Paste CSV</div>
+      <div style="padding:8px 4px;">
+        <textarea id="pasteArea" class="textarea" rows="8" placeholder="Paste CSV content here…"></textarea>
+      </div>
+      <div class="sheet-actions">
+        <button id="pasteImportBtn" class="sheet-btn">Parse & Merge</button>
+      </div>
+      <button id="pasteCancel" class="sheet-cancel">Cancel</button>
     </div>
   </div>
 

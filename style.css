@@ -1,4 +1,4 @@
-/* Minimalist, sticky header, momentum scroll, iOS-friendly, Profiles + Import */
+/* Minimalist, sticky header, iOS-friendly, Profiles + Import menu */
 :root{
   --bg:#ffffff;
   --fg:#111314;
@@ -46,7 +46,7 @@ h1{font-size:18px;margin:0;letter-spacing:.2px;font-weight:700}
 label{font-size:13px;color:var(--muted)}
 .vis-label{visibility:hidden}
 
-input[type="number"],input[type="date"],input[type="email"],input[type="password"],.seg{
+input[type="number"],input[type="date"],input[type="email"],input[type="password"],.seg,.textarea{
   appearance:textfield;
   width:180px;
   padding:12px 12px;
@@ -55,6 +55,7 @@ input[type="number"],input[type="date"],input[type="email"],input[type="password
   font-size:16px;
   background:#fff;
 }
+.textarea{width:100%; resize:vertical; min-height:140px}
 .seg{width:64px;text-align:center}
 .time-seg{display:flex;align-items:center;gap:6px}
 .time-seg span{color:var(--muted)}
@@ -62,12 +63,20 @@ input[type="number"],input[type="date"],input[type="email"],input[type="password
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button{appearance:none;margin:0}
 
-.actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .btn{border:1px solid var(--line);background:#fff;color:var(--fg);padding:10px 14px;border-radius:12px;font-weight:600;cursor:pointer}
 .btn.primary{background:var(--fg);color:#fff;border-color:var(--fg)}
 .btn.danger{color:#fff;background:var(--danger);border-color:var(--danger)}
 .btn.subtle{background:#fff;border-color:var(--line);color:#111}
 .btn.ghost{background:transparent;border-color:var(--line);color:#444}
+
+.menu-wrap{position:relative;display:inline-block}
+.menu{
+  position:absolute; top:110%; left:0; background:#fff; border:1px solid var(--line); border-radius:12px; padding:6px;
+  box-shadow:0 8px 24px rgba(0,0,0,.08); min-width:160px;
+}
+.menu-item{display:block; width:100%; text-align:left; padding:10px 12px; border-radius:10px; border:1px solid transparent; background:#fff; cursor:pointer}
+.menu-item:hover{border-color:var(--line);}
 
 .custom-panel{margin-bottom:8px}
 .custom-row{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
@@ -125,7 +134,7 @@ input[type="number"]::-webkit-inner-spin-button{appearance:none;margin:0}
 @media (max-width:600px){
   .input-panel{flex-direction:column;align-items:stretch}
   .actions{margin-left:0}
-  input[type="number"],input[type="date"],input[type="email"],input[type="password"],.seg{width:100%}
+  input[type="number"],input[type="date"],input[type="email"],input[type="password"],.seg,.textarea{width:100%}
   .time-seg{gap:4px}
   .profile-grid{grid-template-columns:1fr;}
 }
