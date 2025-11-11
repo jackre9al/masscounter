@@ -1,4 +1,4 @@
-/* Same minimalist style; ensure dropdown overlays correctly */
+/* Minimalist, sticky header, iOS-friendly, Profiles + Import menu */
 :root{
   --bg:#ffffff;
   --fg:#111314;
@@ -63,18 +63,17 @@ input[type="number"],input[type="date"],input[type="email"],input[type="password
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button{appearance:none;margin:0}
 
-.actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center; position:relative}
+.actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .btn{border:1px solid var(--line);background:#fff;color:var(--fg);padding:10px 14px;border-radius:12px;font-weight:600;cursor:pointer}
 .btn.primary{background:var(--fg);color:#fff;border-color:var(--fg)}
 .btn.danger{color:#fff;background:var(--danger);border-color:var(--danger)}
 .btn.subtle{background:#fff;border-color:var(--line);color:#111}
 .btn.ghost{background:transparent;border-color:var(--line);color:#444}
-.caret{opacity:.7}
 
 .menu-wrap{position:relative;display:inline-block}
 .menu{
   position:absolute; top:110%; left:0; background:#fff; border:1px solid var(--line); border-radius:12px; padding:6px;
-  box-shadow:0 8px 24px rgba(0,0,0,.12); min-width:160px; z-index:20;
+  box-shadow:0 8px 24px rgba(0,0,0,.08); min-width:160px;
 }
 .menu-item{display:block; width:100%; text-align:left; padding:10px 12px; border-radius:10px; border:1px solid transparent; background:#fff; cursor:pointer}
 .menu-item:hover{border-color:var(--line);}
