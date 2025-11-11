@@ -15,7 +15,7 @@
       </div>
       <div class="meta" id="tzInfo"></div>
       <div class="profile-pill">
-        <button id="profileBtn" class="btn ghost small"><span id="profileLabel">Guest</span></button>
+        <button type="button" id="profileBtn" class="btn ghost small"><span id="profileLabel">Guest</span></button>
       </div>
     </header>
 
@@ -24,29 +24,31 @@
         <label for="grams">Grams</label>
         <div class="inline">
           <input type="number" id="grams" placeholder="50" inputmode="numeric" min="0" step="1" />
-          <button id="clearFieldsBtn" class="btn ghost">Clear fields</button>
+          <button type="button" id="clearFieldsBtn" class="btn ghost">Clear fields</button>
         </div>
       </div>
 
       <div class="field small-field">
         <label class="vis-label">Time</label>
-        <button id="toggleCustom" class="btn subtle">Custom time</button>
+        <button type="button" id="toggleCustom" class="btn subtle">Custom time</button>
       </div>
 
       <div class="actions">
-        <button id="addBtn" class="btn primary">Add</button>
+        <button type="button" id="addBtn" class="btn primary">Add</button>
 
-        <div class="menu-wrap">
-          <button id="importBtn" class="btn">Import ▾</button>
-          <div id="importMenu" class="menu" hidden>
-            <button id="importFileBtn" class="menu-item">From file…</button>
-            <button id="importPasteBtn" class="menu-item">Paste CSV…</button>
+        <div class="menu-wrap" id="importWrap">
+          <button type="button" id="importBtn" class="btn" aria-haspopup="menu" aria-expanded="false">
+            Import <span class="caret">▾</span>
+          </button>
+          <div id="importMenu" class="menu" role="menu" hidden>
+            <button type="button" id="importFileBtn" class="menu-item" role="menuitem">From file…</button>
+            <button type="button" id="importPasteBtn" class="menu-item" role="menuitem">Paste CSV…</button>
           </div>
         </div>
         <input id="importInput" type="file" accept=".csv,text/csv" hidden />
 
-        <button id="exportBtn" class="btn">Export CSV</button>
-        <button id="clearLogsBtn" class="btn danger">Clear Logs</button>
+        <button type="button" id="exportBtn" class="btn">Export CSV</button>
+        <button type="button" id="clearLogsBtn" class="btn danger">Clear Logs</button>
       </div>
     </section>
 
@@ -68,7 +70,7 @@
         </div>
         <div class="field small-field">
           <label class="vis-label">Reset</label>
-          <button id="resetNow" class="btn">Now</button>
+          <button type="button" id="resetNow" class="btn">Now</button>
         </div>
       </div>
       <div class="hint">Leave blank to use your device’s current date & time.</div>
@@ -105,10 +107,10 @@
     <div class="sheet-card">
       <div class="sheet-title">Entry actions</div>
       <div class="sheet-actions">
-        <button id="sheetEdit" class="sheet-btn">Edit</button>
-        <button id="sheetDelete" class="sheet-btn danger">Delete</button>
+        <button type="button" id="sheetEdit" class="sheet-btn">Edit</button>
+        <button type="button" id="sheetDelete" class="sheet-btn danger">Delete</button>
       </div>
-      <button id="sheetCancel" class="sheet-cancel">Cancel</button>
+      <button type="button" id="sheetCancel" class="sheet-cancel">Cancel</button>
     </div>
   </div>
 
@@ -123,11 +125,11 @@
         <input type="password" id="pinInput" placeholder="4 digits" inputmode="numeric" maxlength="4" />
       </div>
       <div class="sheet-actions">
-        <button id="saveProfileBtn" class="sheet-btn">Use profile</button>
-        <button id="setPinBtn" class="sheet-btn">Set / change PIN</button>
-        <button id="removePinBtn" class="sheet-btn">Remove PIN</button>
+        <button type="button" id="saveProfileBtn" class="sheet-btn">Use profile</button>
+        <button type="button" id="setPinBtn" class="sheet-btn">Set / change PIN</button>
+        <button type="button" id="removePinBtn" class="sheet-btn">Remove PIN</button>
       </div>
-      <button id="profileCancel" class="sheet-cancel">Close</button>
+      <button type="button" id="profileCancel" class="sheet-cancel">Close</button>
     </div>
   </div>
 
@@ -139,9 +141,9 @@
         <textarea id="pasteArea" class="textarea" rows="8" placeholder="Paste CSV content here…"></textarea>
       </div>
       <div class="sheet-actions">
-        <button id="pasteImportBtn" class="sheet-btn">Parse & Merge</button>
+        <button type="button" id="pasteImportBtn" class="sheet-btn">Parse & Merge</button>
       </div>
-      <button id="pasteCancel" class="sheet-cancel">Cancel</button>
+      <button type="button" id="pasteCancel" class="sheet-cancel">Cancel</button>
     </div>
   </div>
 
