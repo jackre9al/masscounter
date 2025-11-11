@@ -14,6 +14,9 @@
         <h1>Mass Gainer</h1>
       </div>
       <div class="meta" id="tzInfo"></div>
+      <div class="profile-pill">
+        <button id="profileBtn" class="btn ghost small"><span id="profileLabel">Guest</span></button>
+      </div>
     </header>
 
     <section class="panel input-panel">
@@ -33,6 +36,8 @@
       <div class="actions">
         <button id="addBtn" class="btn primary">Add</button>
         <button id="exportBtn" class="btn">Export CSV</button>
+        <button id="importBtn" class="btn">Import CSV</button>
+        <input id="importInput" type="file" accept=".csv,text/csv" hidden />
         <button id="clearLogsBtn" class="btn danger">Clear Logs</button>
       </div>
     </section>
@@ -96,6 +101,25 @@
         <button id="sheetDelete" class="sheet-btn danger">Delete</button>
       </div>
       <button id="sheetCancel" class="sheet-cancel">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Profile sheet -->
+  <div id="profileSheet" class="sheet" hidden>
+    <div class="sheet-card">
+      <div class="sheet-title">Profile</div>
+      <div class="profile-grid">
+        <label>Email</label>
+        <input type="email" id="emailInput" placeholder="name@example.com" inputmode="email" />
+        <label>PIN (optional)</label>
+        <input type="password" id="pinInput" placeholder="4 digits" inputmode="numeric" maxlength="4" />
+      </div>
+      <div class="sheet-actions">
+        <button id="saveProfileBtn" class="sheet-btn">Use profile</button>
+        <button id="setPinBtn" class="sheet-btn">Set / change PIN</button>
+        <button id="removePinBtn" class="sheet-btn">Remove PIN</button>
+      </div>
+      <button id="profileCancel" class="sheet-cancel">Close</button>
     </div>
   </div>
 
